@@ -1,6 +1,9 @@
 const { BadRequestError } = require("../expressError");
 
-// THIS NEEDS SOME GREAT DOCUMENTATION.
+// This function accepts data for updating and additional params passed in through JS to convert into SQL/JSON
+// First we create an array of keys from DB data and check that it has contents
+// Secondly we map that into an array of columns to be updated and checks with 'jstosql' that we are using the appropriate name for the DB
+// Finally the list of columns to update and their values are returned to our SQL query in progress
 
 function sqlForPartialUpdate(dataToUpdate, jsToSql) {
   const keys = Object.keys(dataToUpdate);
@@ -16,8 +19,6 @@ function sqlForPartialUpdate(dataToUpdate, jsToSql) {
     setCols: cols.join(", "),
     values: Object.values(dataToUpdate),
   };
-//   Returns the data to create the references and values for SQL updates
-// combines return value with prebuilt SQL query within the patch route from ../routes/companies.js
 }
 
 module.exports = { sqlForPartialUpdate };
