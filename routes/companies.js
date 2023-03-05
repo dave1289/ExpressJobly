@@ -5,12 +5,13 @@
 const jsonschema = require("jsonschema");
 const express = require("express");
 
-const { BadRequestError } = require("../expressError");
+const { BadRequestError, ExpressError } = require("../expressError");
 const { ensureLoggedIn } = require("../middleware/auth");
 const Company = require("../models/company");
 
 const companyNewSchema = require("../schemas/companyNew.json");
 const companyUpdateSchema = require("../schemas/companyUpdate.json");
+const { handleFilters } = require("../models/company");
 
 const router = new express.Router();
 
@@ -52,10 +53,35 @@ router.post("/", ensureLoggedIn, async function (req, res, next) {
 
 router.get("/", async function (req, res, next) {
   try {
-    const companies = await Company.findAll();
-    return res.json({ companies });
+   // Accesses header and extracts queries.  Places queries into Filters arr, checks length to ensure filters or not, and filters our companies in realtime for values
+   const filters = req.query
+   const companies = await Company.findAll(req, res, next);
+   const companiesList = []
+   if (filters.length !== 0) {
+      for (let company of companies) {
+         let minEmp = filters['minEmployees']
+         let maxEmp = filters['maxEmployees']
+         let compName = filters['name']
+         if (minEmp > maxEmp) {
+            throw new ExpressError('Min employees must be lower than max employees', 400)
+         }
+         if (company.numEmployees >= minEmp && company.numEmployees <= maxEmp){
+                  companiesList.push(company)
+         }
+         if (compName) {
+         for (let company of companiesList) {
+            if (!company.name.toLowerCase().includes(compName.toLowerCase())){
+               companiesList.pop(company)  
+            }
+         }
+         }
+      }
+         // console.log(minEmp, maxEmp, compName, filters)
+      }
+      console.log(companiesList)
+   return res.json({ companies });
   } catch (err) {
-    return next(err);
+   return next(err);
   }
 });
 

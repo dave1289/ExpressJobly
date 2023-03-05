@@ -27,3 +27,14 @@ describe("Test partial sql update method", function () {
     })
   });
 });
+
+// EXPECTED OUTPUT STRUCTURE
+// {
+//   setCols: `\"password\"=$1, \"first_name\"=$2, \"last_name\"=$3, \"email\"=$4`,
+//   values: [
+//     "password",
+//     "Fname",
+//     "Lname",
+//     "Email"
+//   ]
+// }

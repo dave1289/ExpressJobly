@@ -49,7 +49,9 @@ class Company {
    * Returns [{ handle, name, description, numEmployees, logoUrl }, ...]
    * */
 
-  static async findAll() {
+
+
+  static async findAll(req, res, next) {
     const companiesRes = await db.query(
           `SELECT handle,
                   name,
@@ -58,6 +60,10 @@ class Company {
                   logo_url AS "logoUrl"
            FROM companies
            ORDER BY name`);
+    if (req.query.params) {
+      const filters = this.handleFilters(req.query.params)
+      console.log(filters)
+    }
     return companiesRes.rows;
   }
 
@@ -140,6 +146,7 @@ class Company {
 
     if (!company) throw new NotFoundError(`No company: ${handle}`);
   }
+
 }
 
 
