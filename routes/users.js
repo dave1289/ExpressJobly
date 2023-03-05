@@ -28,6 +28,9 @@ const router = express.Router();
  **/
 
 router.post("/", ensureLoggedIn, async function (req, res, next) {
+   if (!res.locals.user['isAdmin']) {
+      throw new ExpressError('Unauthorized, not administrator', 403)
+   }
   try {
     const validator = jsonschema.validate(req.body, userNewSchema);
     if (!validator.valid) {
@@ -89,6 +92,9 @@ router.get("/:username", ensureLoggedIn, async function (req, res, next) {
  **/
 
 router.patch("/:username", ensureLoggedIn, async function (req, res, next) {
+   if (!res.locals.user['isAdmin'] || !res.locals.user['username'] == req.params('username')) {
+      throw new ExpressError('Unauthorized, not administrator', 403)
+   }
   try {
     const validator = jsonschema.validate(req.body, userUpdateSchema);
     if (!validator.valid) {
@@ -110,6 +116,9 @@ router.patch("/:username", ensureLoggedIn, async function (req, res, next) {
  **/
 
 router.delete("/:username", ensureLoggedIn, async function (req, res, next) {
+   if (!res.locals.user['isAdmin'] || !res.locals.user['username'] == req.params('username')) {
+      throw new ExpressError('Unauthorized, not administrator', 403)
+   }
   try {
     await User.remove(req.params.username);
     return res.json({ deleted: req.params.username });

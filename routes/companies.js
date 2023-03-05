@@ -11,7 +11,7 @@ const Company = require("../models/company");
 
 const companyNewSchema = require("../schemas/companyNew.json");
 const companyUpdateSchema = require("../schemas/companyUpdate.json");
-const { handleFilters } = require("../models/company");
+const db = require("../db");
 
 const router = new express.Router();
 
@@ -56,29 +56,35 @@ router.get("/", async function (req, res, next) {
    // Accesses header and extracts queries.  Places queries into Filters arr, checks length to ensure filters or not, and filters our companies in realtime for values
    const filters = req.query
    const companies = await Company.findAll(req, res, next);
-   const companiesList = []
+   const companiesSearch = []
+   // check for filters in header
    if (filters.length !== 0) {
       for (let company of companies) {
-         let minEmp = filters['minEmployees']
-         let maxEmp = filters['maxEmployees']
+         // isolate values for filters
+         let minEmp = filters['minemployees']
+         let maxEmp = filters['maxemployees']
          let compName = filters['name']
          if (minEmp > maxEmp) {
             throw new ExpressError('Min employees must be lower than max employees', 400)
          }
+         // check num of employees before filtering for name as it is a range
          if (company.numEmployees >= minEmp && company.numEmployees <= maxEmp){
-                  companiesList.push(company)
+                  companiesSearch.push(company)
          }
          if (compName) {
-         for (let company of companiesList) {
+            // check if name is in query string and then sort the companies with appropriate employees by including the passed company name/substring
+         for (let company of companiesSearch) {
             if (!company.name.toLowerCase().includes(compName.toLowerCase())){
-               companiesList.pop(company)  
+               companiesSearch.pop(company)  
             }
          }
-         }
       }
-         // console.log(minEmp, maxEmp, compName, filters)
-      }
-      console.log(companiesList)
+   }
+   }
+   // returns our companySearch if we have passed queries and returns our full query response
+   if (companiesSearch.length !== 0) {
+      return res.json({ companiesSearch })
+   }
    return res.json({ companies });
   } catch (err) {
    return next(err);
@@ -114,13 +120,15 @@ router.get("/:handle", async function (req, res, next) {
  */
 
 router.patch("/:handle", ensureLoggedIn, async function (req, res, next) {
+   if (!res.locals.user['isAdmin']) {
+      throw new ExpressError('Unauthorized, not administrator', 403)
+   }
   try {
     const validator = jsonschema.validate(req.body, companyUpdateSchema);
     if (!validator.valid) {
       const errs = validator.errors.map(e => e.stack);
       throw new BadRequestError(errs);
     }
-
     const company = await Company.update(req.params.handle, req.body);
     return res.json({ company });
   } catch (err) {
@@ -134,6 +142,9 @@ router.patch("/:handle", ensureLoggedIn, async function (req, res, next) {
  */
 
 router.delete("/:handle", ensureLoggedIn, async function (req, res, next) {
+   if (!res.locals.user['isAdmin']) {
+      throw new ExpressError('Unauthorized, not administrator', 403)
+   }
   try {
     await Company.remove(req.params.handle);
     return res.json({ deleted: req.params.handle });
