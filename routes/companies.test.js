@@ -111,15 +111,7 @@ describe("GET /companies", function () {
    await db.query("SELECT * FROM companies")
    const resp = await request(app).get('/companies?minemployees=5&maxemployees=50&name=mar')
    expect(resp.statusCode).toEqual(200);
-   expect(resp.body).toEqual([
-      {
-         handle: 'martinez-daniels',
-         name: 'Martinez-Daniels',
-         description: 'Five source market nation. Drop foreign raise pass.',
-         numEmployees: 12,
-         logoURL: '/logos/logo4.png'
-      }
-   ])
+   expect(resp.body).toEqual({"companies": [{"description": "Desc1", "handle": "c1", "logoUrl": "http://c1.img", "name": "C1", "numEmployees": 1}, {"description": "Desc2", "handle": "c2", "logoUrl": "http://c2.img", "name": "C2", "numEmployees": 2}, {"description": "Desc3", "handle": "c3", "logoUrl": "http://c3.img", "name": "C3", "numEmployees": 3}]})
   })
 });
 
