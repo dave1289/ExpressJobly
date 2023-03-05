@@ -60,10 +60,6 @@ class Company {
                   logo_url AS "logoUrl"
            FROM companies
            ORDER BY name`);
-    if (req.query.params) {
-      const filters = this.handleFilters(req.query.params)
-      console.log(filters)
-    }
     return companiesRes.rows;
   }
 

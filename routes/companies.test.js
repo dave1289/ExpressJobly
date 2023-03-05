@@ -106,6 +106,21 @@ describe("GET /companies", function () {
         .set("authorization", `Bearer ${u1Token}`);
     expect(resp.statusCode).toEqual(500);
   });
+
+  test("filters results by employee number and name", async function () {
+   await db.query("SELECT * FROM companies")
+   const resp = await request(app).get('/companies?minemployees=5&maxemployees=50&name=mar')
+   expect(resp.statusCode).toEqual(200);
+   expect(resp.body).toEqual([
+      {
+         handle: 'martinez-daniels',
+         name: 'Martinez-Daniels',
+         description: 'Five source market nation. Drop foreign raise pass.',
+         numEmployees: 12,
+         logoURL: '/logos/logo4.png'
+      }
+   ])
+  })
 });
 
 /************************************** GET /companies/:handle */
