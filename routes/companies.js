@@ -104,7 +104,6 @@ router.get("/:handle", async function (req, res, next) {
   try {
     const jobs = await Job.getCompanyJobs(req.params.handle)
     const company = await Company.get(req.params.handle);
-    console.log(jobs)
     return res.json({company: company, jobs: jobs });
   } catch (err) {
     return next(err);
